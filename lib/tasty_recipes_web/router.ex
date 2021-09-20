@@ -1,6 +1,8 @@
 defmodule TastyRecipesWeb.Router do
   use TastyRecipesWeb, :router
 
+  import TastyRecipesWeb.Html.UserAuth
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,6 +10,7 @@ defmodule TastyRecipesWeb.Router do
     plug :put_root_layout, {TastyRecipesWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :fetch_current_user
   end
 
   pipeline :api do
@@ -39,5 +42,47 @@ defmodule TastyRecipesWeb.Router do
       pipe_through :browser
       live_dashboard "/dashboard", metrics: TastyRecipesWeb.Telemetry
     end
+  end
+
+  ## Authentication routes
+
+  scope "/html", TastyRecipesWeb.Html, as: :html do
+    pipe_through [:browser, :redirect_if_user_is_authenticated]
+
+    get "/users/register", UserRegistrationController, :new
+    post "/users/register", UserRegistrationController, :create
+    get "/users/log_in", UserSessionController, :new
+    post "/users/log_in", UserSessionController, :create
+    get "/users/reset_password", UserResetPasswordController, :new
+    post "/users/reset_password", UserResetPasswordController, :create
+    get "/users/reset_password/:token", UserResetPasswordController, :edit
+    put "/users/reset_password/:token", UserResetPasswordController, :update
+  end
+
+  scope "/html", TastyRecipesWeb.Html, as: :html do
+    pipe_through [:browser, :require_authenticated_user]
+
+    get "/users/settings", UserSettingsController, :edit
+    put "/users/settings", UserSettingsController, :update
+    get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+  end
+
+  scope "/html", TastyRecipesWeb.Html, as: :html do
+    pipe_through [:browser]
+
+    delete "/users/log_out", UserSessionController, :delete
+    get "/users/confirm", UserConfirmationController, :new
+    post "/users/confirm", UserConfirmationController, :create
+    get "/users/confirm/:token", UserConfirmationController, :confirm
+  end
+
+  scope "/html", TastyRecipesWeb.Html, as: :html do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live "/recipes/", RecipeLive.Index, :index
+    live "/recipes/new", RecipeLive.Index, :new
+    live "/recipes/:id", RecipeLive.Show, :show
+    live "/recipes/:id/edit", RecipeLive.Index, :edit
+    live "/recipes/:id/show/edit", RecipeLive.Show, :edit
   end
 end
