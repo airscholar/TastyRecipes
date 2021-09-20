@@ -49,6 +49,7 @@ defmodule TastyRecipes.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:phx_gen_auth, "~> 0.7", only: [:dev], runtime: false},
+      {:guardian, "~> 0.2.0"}
     ]
   end
 
