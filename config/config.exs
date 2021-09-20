@@ -17,12 +17,16 @@ config :tasty_recipes, TastyRecipesWeb.Endpoint,
   secret_key_base: "qIMyNqQ7MUnE7Wpjiy3zszthL3KeDqAe+qWrCI3U/lwr0O0mJMr67NGCQ6ghK2QL",
   render_errors: [view: TastyRecipesWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: TastyRecipes.PubSub,
-  live_view: [signing_salt: "PSH4bSuI"],
-  ttl: {7: :days}
+  live_view: [signing_salt: "PSH4bSuI"]
 
-  config: :tasty_recipes, TastyRecipesWeb.ApiAuthPipeline,
-    error_handler: TastyRecipesWeb.ApiAuthErrorHandler,
-    module: TastyRecipesWeb.Guardian
+config :tasty_recipes, TastyRecipes.Guardian,
+  secret_key: "QEijcHVZw9X8lgP/9TJROU+MVyvUMLv/mUY2+Kx7XwXfXeVACQsX4vTfaiLapTLv",
+  issuer: "tasty_recipes",
+  ttl: {7, :days}
+
+config :tasty_recipes, TastyRecipesWeb.ApiAuthPipeline,
+  error_handler: TastyRecipesWeb.ApiAuthErrorHandler,
+  module: TastyRecipesWeb.Guardian
 
 # Configures Elixir's Logger
 config :logger, :console,
